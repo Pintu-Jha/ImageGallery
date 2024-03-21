@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Image,
@@ -6,10 +6,10 @@ import {
   Dimensions,
   ActivityIndicator,
   StyleSheet,
-  Text,
+  RefreshControl
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 import NetInfo from '@react-native-community/netinfo';
 
 const API_URL =
@@ -19,6 +19,7 @@ const Home = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isNetwork, setIsNetwork] = useState(true);
+  const [refresh, setRefresh] = useState(false)
 
   const fetchImages = async () => {
     try {
@@ -62,6 +63,15 @@ const Home = () => {
     return () => unsubscribe;
   }, []);
 
+  const onPull = () => {
+    setRefresh(true)
+
+    setTimeout(() => {
+      fetchImages();
+      setRefresh(false)
+    }, 3000)
+  }
+
   if (loading) {
     return (
       <View style={styles.loaderstyle}>
@@ -70,14 +80,18 @@ const Home = () => {
     );
   }
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <FlatList
         data={images}
         numColumns={2}
         keyExtractor={item => item}
-        renderItem={({item}) => (
+        refreshControl={<RefreshControl
+          refreshing={refresh}
+          onRefresh={() => onPull()}
+        />}
+        renderItem={({ item }) => (
           <View>
-            <Image source={{uri: item}} style={styles.imageStyle} />
+            <Image source={{ uri: item }} style={styles.imageStyle} />
           </View>
         )}
       />
@@ -97,7 +111,7 @@ const styles = StyleSheet.create({
   },
   imageStyle: {
     width: width / 2.1,
-    height: height / 2.4,
+    height: height / 3.2,
     margin: 5,
   },
 });
